@@ -1,0 +1,5 @@
+#  SignCTS-Reloaded-Updater
+
+Ce projet va de paire avec SignCTS Reloaded.
+
+Ce script python va fonctionner avec un Redis et y récupérer une liste d'IDSAE à mettre à jour depuis l'OpenData de la CTS

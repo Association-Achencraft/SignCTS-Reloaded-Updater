@@ -1,0 +1,6 @@
+redis
+requests
+json
+sched
+time
+python-dotenv
