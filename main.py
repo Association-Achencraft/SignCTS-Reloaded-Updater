@@ -24,45 +24,47 @@ def actualiser(sc):
     path = path[:-1]
 
 
-    #Requete OpenData
-    req = requests.get(path, auth=(os.getenv("TOKEN"), ''))
+    if len(IDSAE) > 0:
 
-    #Nettoyage des données
-    data = req.json()['ServiceDelivery']['StopMonitoringDelivery'][0]['MonitoredStopVisit']
-    my_data = {}
+        #Requete OpenData
+        req = requests.get(path, auth=(os.getenv("TOKEN"), ''))
 
-
-    for passage in data:
-        idsae = passage['MonitoringRef']
-
-        if useRegex(idsae):
-            idsae = idsae[:-1]
-
-        if not idsae in my_data:
-            my_data[idsae]={
-                "passages":[],
-            }
-
-        ligne = passage['MonitoredVehicleJourney']['PublishedLineName']
-        destination = passage['MonitoredVehicleJourney']['DestinationName']
-        heure = passage['MonitoredVehicleJourney']['MonitoredCall']['ExpectedDepartureTime']
-        timestamp = time.mktime(datetime.datetime.strptime(heure.split('+')[0], "%Y-%m-%dT%H:%M:%S").timetuple())
-        mytime = datetime.datetime.strptime(heure.split('+')[0], "%Y-%m-%dT%H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")
-
-        my_data[idsae]['passages'].append({
-            "ligne":ligne,
-            "destination":destination,
-            "heure":mytime
-        })
+        #Nettoyage des données
+        data = req.json()['ServiceDelivery']['StopMonitoringDelivery'][0]['MonitoredStopVisit']
+        my_data = {}
 
 
-    #Ecriture des données sur REDIS
-    for idsae in r.keys():
-        my_idsae = idsae.decode("utf-8")
-        if my_idsae in my_data:
-            r.set(my_idsae,json.dumps(my_data[my_idsae]))
-        else:
-            r.set(idsae,'')
+        for passage in data:
+            idsae = passage['MonitoringRef']
+
+            if useRegex(idsae):
+                idsae = idsae[:-1]
+
+            if not idsae in my_data:
+                my_data[idsae]={
+                    "passages":[],
+                }
+
+            ligne = passage['MonitoredVehicleJourney']['PublishedLineName']
+            destination = passage['MonitoredVehicleJourney']['DestinationName']
+            heure = passage['MonitoredVehicleJourney']['MonitoredCall']['ExpectedDepartureTime']
+            timestamp = time.mktime(datetime.datetime.strptime(heure.split('+')[0], "%Y-%m-%dT%H:%M:%S").timetuple())
+            mytime = datetime.datetime.strptime(heure.split('+')[0], "%Y-%m-%dT%H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")
+
+            my_data[idsae]['passages'].append({
+                "ligne":ligne,
+                "destination":destination,
+                "heure":mytime
+            })
+
+
+        #Ecriture des données sur REDIS
+        for idsae in r.keys():
+            my_idsae = idsae.decode("utf-8")
+            if my_idsae in my_data:
+                r.set(my_idsae,json.dumps(my_data[my_idsae]))
+            else:
+                r.set(idsae,'')
 
     sc.enter(int(os.getenv("UPDATE_INTERVAL")), 1, actualiser, (sc,))
 
