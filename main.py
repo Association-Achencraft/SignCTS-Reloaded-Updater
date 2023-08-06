@@ -24,6 +24,7 @@ def actualiser(sc):
     path = path[:-1]
 
 
+
     if len(IDSAE) > 0:
 
         #Requete OpenData
@@ -37,8 +38,9 @@ def actualiser(sc):
         for passage in data:
             idsae = passage['MonitoringRef']
 
-            if useRegex(idsae):
-                idsae = idsae[:-1]
+            #commenté le 06/08/23
+            #if useRegex(idsae):
+            #    idsae = idsae[:-1]
 
             if not idsae in my_data:
                 my_data[idsae]={
@@ -56,6 +58,8 @@ def actualiser(sc):
                 "destination":destination,
                 "heure":mytime
             })
+
+        print(my_data)
 
 
         #Ecriture des données sur REDIS
