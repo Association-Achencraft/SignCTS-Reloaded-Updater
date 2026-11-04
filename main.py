@@ -50,8 +50,14 @@ def actualiser(sc):
             ligne = passage['MonitoredVehicleJourney']['PublishedLineName']
             destination = passage['MonitoredVehicleJourney']['DestinationName']
             heure = passage['MonitoredVehicleJourney']['MonitoredCall']['ExpectedDepartureTime']
-            timestamp = time.mktime(datetime.datetime.strptime(heure.split('+')[0], "%Y-%m-%dT%H:%M:%S").timetuple())
-            mytime = datetime.datetime.strptime(heure.split('+')[0], "%Y-%m-%dT%H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")
+            
+            
+            try:
+                dt = datetime.datetime.fromisoformat(heure)
+            except ValueError:
+                print(f"Heure illisible pour {idsae} : {heure!r}")
+                continue
+            mytime = dt.strftime("%d/%m/%Y %H:%M:%S")
 
             my_data[idsae]['passages'].append({
                 "ligne":ligne,
@@ -59,7 +65,7 @@ def actualiser(sc):
                 "heure":mytime
             })
 
-        print(my_data)
+        # print(my_data)
 
 
         #Ecriture des données sur REDIS
